@@ -1,5 +1,5 @@
 {
-  "name": "client",
+  "name": "cloud-watch-trigger",
   "image": "node:20",
   "remoteUser": "node",
   "containerEnv": {
@@ -7,10 +7,9 @@
     "PROJECT_SECRET": "DevAdmin",
     "PROJECT_AWS_ACCESS_KEY": "",
     "PROJECT_AWS_SECRET_ACCESS_KEY": "",
-    "PROJECT_AWS_REGION": "",
-    "NEXTAUTH_URL": "http://localhost:3000"
+    "PROJECT_AWS_REGION": ""
   },
-  "workspaceFolder": "/workspaces/admin/client/client.code-workspace",
+  "workspaceFolder": "/workspaces/admin/cloud-watch-trigger/cloud-watch-trigger.code-workspace",
   "customizations": {
     "vscode": {
       "extensions": [
