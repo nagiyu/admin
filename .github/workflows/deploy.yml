@@ -66,7 +66,7 @@ jobs:
         aws ecr get-login-password --region ${{ env.AWS_SECRETS_REGION }} | docker login --username AWS --password-stdin ${{ env.AWS_SECRETS_REPOSITORY_ID }}.dkr.ecr.${{ env.AWS_SECRETS_REGION }}.amazonaws.com
         docker build \
           --build-arg PROCESS_ENV=${{ github.ref == 'refs/heads/master' && 'production' || 'development' }} \
-          --build-arg PROJECT_SECRET=${{ github.ref == 'refs/heads/master' && 'Finance' || 'DevFinance' }} \
+          --build-arg PROJECT_SECRET=${{ github.ref == 'refs/heads/master' && 'Admin' || 'DevAdmin' }} \
           --build-arg PROJECT_AWS_ACCESS_KEY=${{ env.PROJECT_AWS_ACCESS_KEY }} \
           --build-arg PROJECT_AWS_SECRET_ACCESS_KEY=${{ env.PROJECT_AWS_SECRET_ACCESS_KEY }} \
           --build-arg PROJECT_AWS_REGION=${{ env.PROJECT_AWS_REGION }} \
@@ -79,3 +79,70 @@ jobs:
     - name: Update Lambda Function
       run: |
         aws lambda update-function-code --function-name ${{ env.PROJECT_CLIENT_PROJECT_NAME }} --image-uri ${{ env.AWS_SECRETS_REPOSITORY_ID }}.dkr.ecr.${{ env.AWS_SECRETS_REGION }}.amazonaws.com/${{ env.PROJECT_CLIENT_PROJECT_NAME }}:latest
+
+  deploy-cloud-watch-trigger:
+    runs-on: ubuntu-latest
+
+    environment:
+      name: ${{ github.ref == 'refs/heads/master' && 'production' || 'development' }}
+
+    steps:
+    - name: Checkout repository (with submodules)
+      uses: actions/checkout@v4
+      with:
+        submodules: true
+
+    - name: AWS CLI install
+      run: |
+        cd /tmp
+        curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+        unzip awscliv2.zip
+        sudo ./aws/install --update
+
+    - name: AWS set Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+
+    - name: Get Secrets from AWS SecretsManager
+      uses: aws-actions/aws-secretsmanager-get-secrets@v2
+      with:
+        secret-ids: |
+          AWS_SECRETS, AWS
+        parse-json-secrets: true
+
+    - name: Get Project Secrets from Admin
+      if: ${{ startsWith(github.ref, 'refs/heads/master') }}
+      uses: aws-actions/aws-secretsmanager-get-secrets@v2
+      with:
+        secret-ids: |
+          PROJECT, Admin
+        parse-json-secrets: true
+
+    - name: Get Project Secrets from DevAdmin
+      if: ${{ !startsWith(github.ref, 'refs/heads/master') }}
+      uses: aws-actions/aws-secretsmanager-get-secrets@v2
+      with:
+        secret-ids: |
+          PROJECT, DevAdmin
+        parse-json-secrets: true
+
+    - name: Deploy
+      run: |
+        aws ecr get-login-password --region ${{ env.AWS_SECRETS_REGION }} | docker login --username AWS --password-stdin ${{ env.AWS_SECRETS_REPOSITORY_ID }}.dkr.ecr.${{ env.AWS_SECRETS_REGION }}.amazonaws.com
+        docker build \
+          --build-arg PROCESS_ENV=${{ github.ref == 'refs/heads/master' && 'production' || 'development' }} \
+          --build-arg PROJECT_SECRET=${{ github.ref == 'refs/heads/master' && 'Admin' || 'DevAdmin' }} \
+          --build-arg PROJECT_AWS_ACCESS_KEY=${{ env.PROJECT_AWS_ACCESS_KEY }} \
+          --build-arg PROJECT_AWS_SECRET_ACCESS_KEY=${{ env.PROJECT_AWS_SECRET_ACCESS_KEY }} \
+          --build-arg PROJECT_AWS_REGION=${{ env.PROJECT_AWS_REGION }} \
+          -f cloud-watch-trigger/Dockerfile \
+          -t ${{ env.PROJECT_CLOUD_WATCH_TRIGGER_PROJECT_NAME }} .
+        docker tag ${{ env.PROJECT_CLOUD_WATCH_TRIGGER_PROJECT_NAME }}:latest ${{ env.AWS_SECRETS_REPOSITORY_ID }}.dkr.ecr.${{ env.AWS_SECRETS_REGION }}.amazonaws.com/${{ env.PROJECT_CLOUD_WATCH_TRIGGER_PROJECT_NAME }}:latest
+        docker push ${{ env.AWS_SECRETS_REPOSITORY_ID }}.dkr.ecr.${{ env.AWS_SECRETS_REGION }}.amazonaws.com/${{ env.PROJECT_CLOUD_WATCH_TRIGGER_PROJECT_NAME }}:latest
+
+    - name: Update Lambda Function
+      run: |
+        aws lambda update-function-code --function-name ${{ env.PROJECT_CLOUD_WATCH_TRIGGER_PROJECT_NAME }} --image-uri ${{ env.AWS_SECRETS_REPOSITORY_ID }}.dkr.ecr.${{ env.AWS_SECRETS_REGION }}.amazonaws.com/${{ env.PROJECT_CLOUD_WATCH_TRIGGER_PROJECT_NAME }}:latest

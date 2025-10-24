@@ -2,15 +2,11 @@
   "folders": [
     {
       "path": ".",
-      "name": "client"
+      "name": "cloud-watch-trigger"
     },
     {
       "path": "../admin",
       "name": "admin"
-    },
-    {
-      "path": "../nextjs-common/common",
-      "name": "client-common"
     },
     {
       "path": "../typescript-common/common",
