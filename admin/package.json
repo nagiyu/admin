@@ -1,4 +1,12 @@
 {
   "name": "admin",
-  "version": "1.0.0"
+  "version": "1.0.0",
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.5"
+  }
 }
