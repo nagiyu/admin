@@ -12,10 +12,14 @@ ARG NEXTAUTH_URL
 WORKDIR /app
 
 COPY typescript-common/common ./typescript-common/common
+COPY admin ./admin
 COPY nextjs-common/common ./nextjs-common/common
 COPY client ./client
 
 WORKDIR /app/typescript-common/common
+RUN npm install
+
+WORKDIR /app/admin
 RUN npm install
 
 WORKDIR /app/nextjs-common/common
@@ -47,6 +51,9 @@ ENV AWS_LWA_PORT=3000
 
 WORKDIR /app/typescript-common/common
 COPY --from=builder /app/typescript-common/common .
+
+WORKDIR /app/admin
+COPY --from=builder /app/admin .
 
 WORKDIR /app/nextjs-common/common
 COPY --from=builder /app/nextjs-common/common .
