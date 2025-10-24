@@ -11,7 +11,12 @@ export class ErrorNotificationService extends CRUDServiceBase<ErrorNotificationD
       dataAccessor = new ErrorNotificationDataAccessor();
     }
 
-    super(dataAccessor, true);
+    super(dataAccessor, false);
+  }
+
+  public override async get(): Promise<ErrorNotificationDataType[]> {
+    const result = await super.get();
+    return result.sort((a, b) => b.create - a.create);
   }
 
   protected override dataToRecord(data: Partial<ErrorNotificationDataType>): Partial<ErrorNotificationRecordType> {

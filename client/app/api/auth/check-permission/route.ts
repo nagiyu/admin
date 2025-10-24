@@ -1,6 +1,6 @@
 import { POST as PostBase } from '@client-common/routes/auth/check-permission/route';
 
-import { AdminAuthorizationService } from '@/services/AdminAuthorizationService';
+import { AdminAuthorizationService } from '@/services/AdminAuthorizationService.server';
 
 const authorizationService = new AdminAuthorizationService();
 
