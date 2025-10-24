@@ -6,6 +6,7 @@
     "build": "esbuild index.ts --bundle --minify --sourcemap --platform=node --target=es2020 --outfile=dist/index.js"
   },
   "devDependencies": {
+    "@types/aws-lambda": "^8.10.156",
     "@types/node": "^24.9.1",
     "esbuild": "^0.25.9",
     "esbuild-plugin-tsconfig-paths": "^1.0.1",
