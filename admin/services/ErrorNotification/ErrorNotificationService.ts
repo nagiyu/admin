@@ -30,13 +30,13 @@ export class ErrorNotificationService extends CRUDServiceBase<ErrorNotificationD
 
   protected override recordToData(record: ErrorNotificationRecordType): ErrorNotificationDataType {
     return {
-      id: record.ID,
+      id: record.ID || '',
       rootFeature: record.RootFeature,
       feature: record.Feature,
       message: record.Message,
       stack: record.Stack,
-      create: record.Create,
-      update: record.Update
+      create: record.Create || 0,
+      update: record.Update || 0
     }
   }
 }
