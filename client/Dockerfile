@@ -1,0 +1,69 @@
+FROM node:20 AS base
+
+FROM base AS builder
+
+ARG PROCESS_ENV
+ARG PROJECT_SECRET
+ARG PROJECT_AWS_ACCESS_KEY
+ARG PROJECT_AWS_SECRET_ACCESS_KEY
+ARG PROJECT_AWS_REGION
+ARG NEXTAUTH_URL
+
+WORKDIR /app
+
+COPY typescript-common/common ./typescript-common/common
+COPY admin ./admin
+COPY nextjs-common/common ./nextjs-common/common
+COPY client ./client
+
+WORKDIR /app/typescript-common/common
+RUN npm install
+
+WORKDIR /app/admin
+RUN npm install
+
+WORKDIR /app/nextjs-common/common
+RUN npm install
+
+WORKDIR /app/client
+RUN npm install && \
+    npm run build
+
+FROM base AS runner
+
+ARG PROCESS_ENV
+ARG PROJECT_SECRET
+ARG PROJECT_AWS_ACCESS_KEY
+ARG PROJECT_AWS_SECRET_ACCESS_KEY
+ARG PROJECT_AWS_REGION
+ARG NEXTAUTH_URL
+
+ENV PROCESS_ENV=${PROCESS_ENV}
+ENV PROJECT_SECRET=${PROJECT_SECRET}
+ENV PROJECT_AWS_ACCESS_KEY=${PROJECT_AWS_ACCESS_KEY}
+ENV PROJECT_AWS_SECRET_ACCESS_KEY=${PROJECT_AWS_SECRET_ACCESS_KEY}
+ENV PROJECT_AWS_REGION=${PROJECT_AWS_REGION}
+ENV NEXTAUTH_URL=${NEXTAUTH_URL}
+
+COPY --from=public.ecr.aws/awsguru/aws-lambda-adapter:0.9.1 /lambda-adapter /opt/extensions/lambda-adapter
+
+ENV AWS_LWA_PORT=3000
+
+WORKDIR /app/typescript-common/common
+COPY --from=builder /app/typescript-common/common .
+
+WORKDIR /app/admin
+COPY --from=builder /app/admin .
+
+WORKDIR /app/nextjs-common/common
+COPY --from=builder /app/nextjs-common/common .
+
+WORKDIR /app/client
+COPY --from=builder /app/client/.next/standalone ./
+
+COPY --from=builder /app/client/public ./public
+COPY --from=builder /app/client/.next/static ./.next/static
+
+USER node
+
+CMD ["node", "server.js"]

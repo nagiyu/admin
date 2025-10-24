@@ -1,0 +1,15 @@
+{
+  "name": "cloud-watch-trigger",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "esbuild index.ts --bundle --minify --sourcemap --platform=node --target=es2020 --outfile=dist/index.js"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.156",
+    "@types/node": "^24.9.1",
+    "esbuild": "^0.25.9",
+    "esbuild-plugin-tsconfig-paths": "^1.0.1",
+    "typescript": "^5.9.2"
+  }
+}
