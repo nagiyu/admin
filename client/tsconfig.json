@@ -26,6 +26,9 @@
       "@/*": [
         "./*"
       ],
+      "@admin/*": [
+        "../admin/*"
+      ],
       "@common/*": [
         "../typescript-common/common/*"
       ],

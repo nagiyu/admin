@@ -5,6 +5,10 @@
       "name": "client"
     },
     {
+      "path": "../admin",
+      "name": "admin"
+    },
+    {
       "path": "../nextjs-common/common",
       "name": "client-common"
     },
