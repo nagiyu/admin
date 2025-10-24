@@ -11,6 +11,12 @@ import { AdminFeature } from '@admin/consts/AdminConst';
 import { AdminAuthDataType } from '@admin/interfaces/data/AdminAuthDataType';
 
 const AdminPermissionMatrix: PermissionMatrix<AdminFeature> = {
+  [AdminFeature.HOME]: {
+    [UserType.GUEST]: PermissionLevel.NONE,
+    [UserType.AUTHENTICATED]: PermissionLevel.NONE,
+    [UserType.PREMIUM]: PermissionLevel.NONE,
+    [UserType.ADMIN]: PermissionLevel.ADMIN,
+  },
   [AdminFeature.ERROR_NOTIFICATION]: {
     [UserType.GUEST]: PermissionLevel.NONE,
     [UserType.AUTHENTICATED]: PermissionLevel.NONE,
