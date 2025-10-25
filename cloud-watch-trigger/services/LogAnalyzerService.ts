@@ -51,7 +51,7 @@ export class LogAnalyzerService {
     const messages: OpenAIChatHistory = [
       {
         role: OPENAI_MESSAGE_ROLES.SYSTEM,
-        content: `あなたは${url}のコードベースに精通した熟練ソフトウェアエンジニアです。以下のエラーログを分析し、考えられる原因や解決策について日本語で詳しく説明してください。`,
+        content: `あなたは${url}のコードベースに精通した熟練ソフトウェアエンジニアです。以下のエラーログを分析し、考えられる原因や解決策について日本語で詳しく説明してください。なお、必ず URL を参照してコードベースを確認しながら回答してください。`,
       },
       {
         role: OPENAI_MESSAGE_ROLES.USER,
