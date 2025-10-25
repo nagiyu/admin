@@ -24,7 +24,8 @@ export class ErrorNotificationService extends CRUDServiceBase<ErrorNotificationD
       RootFeature: data.rootFeature,
       Feature: data.feature,
       Message: data.message,
-      Stack: data.stack
+      Stack: data.stack,
+      AnalyzeResult: data.analyzeResult
     }
   }
 
@@ -35,6 +36,7 @@ export class ErrorNotificationService extends CRUDServiceBase<ErrorNotificationD
       feature: record.Feature,
       message: record.Message,
       stack: record.Stack,
+      analyzeResult: record.AnalyzeResult,
       create: record.Create || 0,
       update: record.Update || 0
     }

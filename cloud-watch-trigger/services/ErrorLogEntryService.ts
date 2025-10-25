@@ -12,7 +12,7 @@ export class ErrorLogEntryService {
     this.service = service;
   }
 
-  public async entryError(data: ErrorNotificationDataType): Promise<void> {
-    await this.service.create(data);
+  public async entryError(data: ErrorNotificationDataType): Promise<ErrorNotificationDataType> {
+    return await this.service.create(data);
   }
 }

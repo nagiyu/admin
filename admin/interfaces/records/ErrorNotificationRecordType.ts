@@ -6,4 +6,5 @@ export interface ErrorNotificationRecordType extends RecordTypeBase {
   Feature: string;
   Message: string;
   Stack: string;
+  AnalyzeResult?: string;
 }
