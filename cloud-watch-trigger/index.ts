@@ -1,11 +1,15 @@
 import { CloudWatchLogsEvent, CloudWatchLogsDecodedData } from 'aws-lambda';
-
 import { promisify } from 'util';
 import { gunzip } from 'zlib';
 
+import ErrorUtil from '@common/utils/ErrorUtil';
 import { DataTypeBase } from '@common/interfaces/data/DataTypeBase';
 
+import { AdminFeature, ROOT_FEATURE } from '@admin/consts/AdminConst';
+
 import { ErrorLogEntryService } from '@/services/ErrorLogEntryService';
+import { LogAnalyzerService } from '@/services/LogAnalyzerService';
+
 interface ErrorNotificationDataType extends DataTypeBase {
   rootFeature: string;
   feature: string;
@@ -16,7 +20,8 @@ interface ErrorNotificationDataType extends DataTypeBase {
 const gunzipAsync = promisify(gunzip);
 
 export const handler = async (event: CloudWatchLogsEvent, context: any) => {
-  const service = new ErrorLogEntryService();
+  const errorLogEntry = new ErrorLogEntryService();
+  const logAnalyzer = new LogAnalyzerService();
 
   try {
     const payload = Buffer.from(event.awslogs.data, 'base64');
@@ -25,19 +30,20 @@ export const handler = async (event: CloudWatchLogsEvent, context: any) => {
 
     for (const logEvent of logData.logEvents) {
       const message = logEvent.message;
+      const errorData: ErrorNotificationDataType = JSON.parse(message);
 
-      try {
-        const errorData: ErrorNotificationDataType = JSON.parse(message);
+      const created = await errorLogEntry.entryError(errorData);
 
-        await service.entryError(errorData);
-
-        console.log('Logged error data:', errorData);
-      } catch (err) {
-        console.error('Error parsing log event message:', err);
-      }
+      await logAnalyzer.analyzeLog(created);
     }
   } catch (err) {
-    console.error('Error decoding log event:', err);
-    throw err;
+    if (err instanceof Error) {
+      ErrorUtil.logError(ROOT_FEATURE, AdminFeature.CLOUD_WATCH_TRIGGER, err);
+      throw err;
+    }
+
+    const error = new Error('Unknown error occurred in LogAnalyzerHandler');
+    ErrorUtil.logError(ROOT_FEATURE, AdminFeature.CLOUD_WATCH_TRIGGER, error);
+    throw error;
   }
 };

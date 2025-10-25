@@ -5,4 +5,5 @@ export interface ErrorNotificationDataType extends DataTypeBase {
   feature: string;
   message: string;
   stack: string;
+  analyzeResult?: string;
 }

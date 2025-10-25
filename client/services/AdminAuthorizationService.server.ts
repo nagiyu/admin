@@ -22,7 +22,13 @@ const AdminPermissionMatrix: PermissionMatrix<AdminFeature> = {
     [UserType.AUTHENTICATED]: PermissionLevel.NONE,
     [UserType.PREMIUM]: PermissionLevel.NONE,
     [UserType.ADMIN]: PermissionLevel.ADMIN,
-  }
+  },
+  [AdminFeature.CLOUD_WATCH_TRIGGER]: {
+    [UserType.GUEST]: PermissionLevel.NONE,
+    [UserType.AUTHENTICATED]: PermissionLevel.NONE,
+    [UserType.PREMIUM]: PermissionLevel.NONE,
+    [UserType.ADMIN]: PermissionLevel.ADMIN,
+  },
 }
 
 const adminAuthService = new AdminAuthService();
