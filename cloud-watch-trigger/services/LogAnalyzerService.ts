@@ -9,38 +9,39 @@ import { OpenAIChatHistory } from '@common/interfaces/OpenAIMessageType';
 
 import { ErrorNotificationDataType } from '@admin/interfaces/data/ErrorNotificationDataType';
 import { ErrorNotificationService } from '@admin/services/ErrorNotification/ErrorNotificationService';
-import { OPENAI_MESSAGE_ROLES, OPENAI_MODEL, OpenAIToolName } from '@common/consts/OpenAIConst';
-
-interface FeatureInfo {
-  rootFeature: string;
-  url: string;
-}
-
-const featureList: FeatureInfo[] = [
-  {
-    rootFeature: 'Admin',
-    url: 'https://github.com/nagiyu/admin',
-  },
-];
+import { FeatureInfoService } from '@admin/services/featureInfo/FeatureInfoService';
+import { OPENAI_MESSAGE_ROLES, OPENAI_MODEL } from '@common/consts/OpenAIConst';
 
 const execAsync = promisify(exec);
 
 export class LogAnalyzerService {
   private service: ErrorNotificationService;
+  private featureInfoService: FeatureInfoService;
   private openAIService: OpenAIService;
 
-  constructor(service?: ErrorNotificationService, openAIService?: OpenAIService) {
+  constructor(
+    service?: ErrorNotificationService,
+    featureInfoService?: FeatureInfoService,
+    openAIService?: OpenAIService
+  ) {
     if (!service) {
       service = new ErrorNotificationService();
     }
 
+    if (!featureInfoService) {
+      featureInfoService = new FeatureInfoService();
+    }
+
     this.service = service;
+    this.featureInfoService = featureInfoService;
     this.openAIService = openAIService;
   }
 
   public async analyzeLog(data: ErrorNotificationDataType): Promise<void> {
     const { rootFeature, message, stack } = data;
-    const featureInfo = featureList.find((feature) => feature.rootFeature === rootFeature);
+
+    const featureRecords = await this.featureInfoService.get();
+    const featureInfo = featureRecords[0].featureInfoList.find((info) => info.rootFeature === rootFeature);
 
     if (!featureInfo) {
       throw new BadRequestError(`Unknown root feature: ${rootFeature}`);

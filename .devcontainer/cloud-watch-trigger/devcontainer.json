@@ -1,6 +1,6 @@
 {
   "name": "cloud-watch-trigger",
-  "image": "node:20",
+  "dockerFile": "Dockerfile",
   "remoteUser": "node",
   "containerEnv": {
     "PROCESS_ENV": "local",
