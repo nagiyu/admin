@@ -52,6 +52,6 @@ export async function DELETE(request: NextRequest) {
 
   return APIUtil.apiHandler(async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return await SubscriptionAPIHelper.delete(request as any);
+    await SubscriptionAPIHelper.delete(request as any);
   }, options);
 }
