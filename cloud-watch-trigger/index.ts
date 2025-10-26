@@ -2,12 +2,10 @@ import { CloudWatchLogsEvent, CloudWatchLogsDecodedData } from 'aws-lambda';
 import { promisify } from 'util';
 import { gunzip } from 'zlib';
 
-import ErrorUtil from '@common/utils/ErrorUtil';
 import { DataTypeBase } from '@common/interfaces/data/DataTypeBase';
 
-import { AdminFeature, ROOT_FEATURE } from '@admin/consts/AdminConst';
-
 import { ErrorLogEntryService } from '@/services/ErrorLogEntryService';
+import { ErrorNotificationService } from '@/services/ErrorNotificationService';
 import { LogAnalyzerService } from '@/services/LogAnalyzerService';
 
 interface ErrorNotificationDataType extends DataTypeBase {
@@ -21,6 +19,7 @@ const gunzipAsync = promisify(gunzip);
 
 export const handler = async (event: CloudWatchLogsEvent, context: any) => {
   const errorLogEntry = new ErrorLogEntryService();
+  const errorNotification = new ErrorNotificationService();
   const logAnalyzer = new LogAnalyzerService();
 
   try {
@@ -34,16 +33,12 @@ export const handler = async (event: CloudWatchLogsEvent, context: any) => {
 
       const created = await errorLogEntry.entryError(errorData);
 
+      await errorNotification.notify(created);
+
       await logAnalyzer.analyzeLog(created);
     }
   } catch (err) {
-    if (err instanceof Error) {
-      ErrorUtil.logError(ROOT_FEATURE, AdminFeature.CLOUD_WATCH_TRIGGER, err);
-      throw err;
-    }
-
-    const error = new Error('Unknown error occurred in LogAnalyzerHandler');
-    ErrorUtil.logError(ROOT_FEATURE, AdminFeature.CLOUD_WATCH_TRIGGER, error);
-    throw error;
+    console.error('Error processing CloudWatch Logs event:', err);
+    throw err;
   }
 };

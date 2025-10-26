@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 import { PermissionLevel } from '@common/enums/PermissionLevel';
 
@@ -34,6 +35,7 @@ const columns: Column<ErrorNotificationTableColumn>[] = [
 ]
 
 export default function ErrorNotificationsPage() {
+    const searchParams = useSearchParams();
     const [errorList, setErrorList] = useState<ErrorNotificationTableColumn[]>([]);
     const [error, setError] = useState<ErrorNotificationDataType | null>(null);
     const [detailDialogOpen, setDetailDialogOpen] = useState(false);
@@ -66,6 +68,22 @@ export default function ErrorNotificationsPage() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    useEffect(() => {
+        // Check for ID URL parameter
+        const idFromUrl = searchParams.get('id');
+
+        if (!idFromUrl) {
+            return;
+        }
+
+        (async () => {
+            const data = await fetchService.getById(idFromUrl);
+            setError(data);
+        })();
+
+        setDetailDialogOpen(true);
+    }, [searchParams]);
+
     return (
         <FeatureGuard
             feature={AdminFeature.ERROR_NOTIFICATION}
@@ -95,6 +113,11 @@ export default function ErrorNotificationsPage() {
                         >
                             {() => (
                                 <BasicStack>
+                                    <BasicTextField
+                                        label='ID'
+                                        value={error?.id}
+                                        readonly={true}
+                                    />
                                     <BasicTextField
                                         label='Root Feature'
                                         value={error?.rootFeature}

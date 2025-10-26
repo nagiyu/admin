@@ -1,0 +1,18 @@
+@host = http://localhost:3000
+# @host = 
+
+
+### Send Notification Test
+POST {{host}}/api/send-notification
+Content-Type: application/json
+
+{
+    "message": "{\"id\":\"\"}",
+    "subscription": {
+        "endpoint": "",
+        "keys": {
+            "p256dh": "",
+            "auth": ""
+        }
+    }
+}
