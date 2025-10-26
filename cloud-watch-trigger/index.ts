@@ -31,9 +31,9 @@ export const handler = async (event: CloudWatchLogsEvent, context: any) => {
       const message = logEvent.message;
       const errorData: ErrorNotificationDataType = JSON.parse(message);
 
-      await errorNotification.notify(errorData);
-
       const created = await errorLogEntry.entryError(errorData);
+
+      await errorNotification.notify(created);
 
       await logAnalyzer.analyzeLog(created);
     }
