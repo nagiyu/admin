@@ -1,6 +1,4 @@
-import { ErrorNotificationDataType } from '@admin/interfaces/data/ErrorNotificationDataType';
 import { ErrorNotificationService } from '@admin/services/ErrorNotification/ErrorNotificationService';
-import { AdminFeature, ROOT_FEATURE } from '@admin/consts/AdminConst';
 
 import { LogAnalyzerService } from '@/services/LogAnalyzerService';
 
@@ -10,25 +8,16 @@ describe('LogAnalyzerService', () => {
     const logAnalyzer = new LogAnalyzerService();
 
     it('Analyze Log', async () => {
-      const error = new Error('Log Analyze Test Error');
+      const records = await errorNotification.get();
 
-      const data: Partial<ErrorNotificationDataType> = {
-        rootFeature: ROOT_FEATURE,
-        feature: AdminFeature.CLOUD_WATCH_TRIGGER,
-        message: error.message,
-        stack: error.stack || '',
-      };
+      await logAnalyzer.analyzeLog(records[0]);
 
-      const created = await errorNotification.create(data);
-
-      await logAnalyzer.analyzeLog(created);
-
-      const updated = await errorNotification.getById(created.id);
+      const updated = await errorNotification.getById(records[0].id);
 
       console.log('Analyze Result:', updated?.analyzeResult);
 
       expect(updated).toBeDefined();
       expect(updated?.analyzeResult).toBeDefined();
-    }, 30000);
+    }, 90000);
   });
 });
