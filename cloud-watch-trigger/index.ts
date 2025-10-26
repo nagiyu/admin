@@ -8,6 +8,7 @@ import { DataTypeBase } from '@common/interfaces/data/DataTypeBase';
 import { AdminFeature, ROOT_FEATURE } from '@admin/consts/AdminConst';
 
 import { ErrorLogEntryService } from '@/services/ErrorLogEntryService';
+import { ErrorNotificationService } from '@/services/ErrorNotificationService';
 import { LogAnalyzerService } from '@/services/LogAnalyzerService';
 
 interface ErrorNotificationDataType extends DataTypeBase {
@@ -21,6 +22,7 @@ const gunzipAsync = promisify(gunzip);
 
 export const handler = async (event: CloudWatchLogsEvent, context: any) => {
   const errorLogEntry = new ErrorLogEntryService();
+  const errorNotification = new ErrorNotificationService();
   const logAnalyzer = new LogAnalyzerService();
 
   try {
@@ -31,6 +33,8 @@ export const handler = async (event: CloudWatchLogsEvent, context: any) => {
     for (const logEvent of logData.logEvents) {
       const message = logEvent.message;
       const errorData: ErrorNotificationDataType = JSON.parse(message);
+
+      await errorNotification.notify(errorData);
 
       const created = await errorLogEntry.entryError(errorData);
 
