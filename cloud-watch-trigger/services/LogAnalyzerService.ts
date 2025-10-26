@@ -47,7 +47,7 @@ export class LogAnalyzerService {
     }
 
     const outputFilePath = `/tmp/output-${Date.now()}.json`;
-    await execAsync(`npx repomix@latest --remote ${featureInfo.url} -o ${outputFilePath} --style json --remove-comments`);
+    await execAsync(`repomix --remote ${featureInfo.url} -o ${outputFilePath} --style json --remove-comments`);
     const fileContent = await fs.promises.readFile(outputFilePath, 'utf-8');
     await fs.promises.unlink(outputFilePath);
 
