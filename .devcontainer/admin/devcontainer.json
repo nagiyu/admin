@@ -1,6 +1,6 @@
 {
-  "name": "cloud-watch-trigger",
-  "dockerFile": "Dockerfile",
+  "name": "admin",
+  "image": "node:20",
   "remoteUser": "node",
   "containerEnv": {
     "PROCESS_ENV": "local",
@@ -9,7 +9,7 @@
     "PROJECT_AWS_SECRET_ACCESS_KEY": "",
     "PROJECT_AWS_REGION": ""
   },
-  "workspaceFolder": "/workspaces/admin/cloud-watch-trigger/cloud-watch-trigger.code-workspace",
+  "workspaceFolder": "/workspaces/admin/admin/admin.code-workspace",
   "customizations": {
     "vscode": {
       "extensions": [

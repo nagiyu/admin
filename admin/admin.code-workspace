@@ -2,10 +2,6 @@
   "folders": [
     {
       "path": ".",
-      "name": "cloud-watch-trigger"
-    },
-    {
-      "path": "../admin",
       "name": "admin"
     },
     {
