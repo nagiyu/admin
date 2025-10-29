@@ -10,26 +10,29 @@ Admin プロジェクトは、管理機能を提供するシステムです。�
 
 ## ドキュメント一覧
 
-### アーキテクチャ
+### 🚀 クイックスタート
+- **[クイックリファレンス](./QUICK_REFERENCE.md)** - よくあるタスク、コマンド、FAQ
+
+### 🏗️ アーキテクチャ
 - [システムアーキテクチャ](./architecture/system-architecture.md) - システム全体の構成
 - [データフロー](./architecture/data-flow.md) - データの流れと処理フロー
 
-### 機能ドキュメント
+### ⚙️ 機能ドキュメント
 - [Admin 機能](./features/admin.md) - 管理者機能の詳細
 - [エラー通知機能](./features/error-notification.md) - エラー通知システムの詳細
 - [機能情報管理](./features/feature-info.md) - 機能情報の管理
 
-### コンポーネント
+### 🧩 コンポーネント
 - [バックエンドサービス](./components/backend-services.md) - バックエンドサービスの実装
 - [フロントエンドコンポーネント](./components/frontend-components.md) - フロントエンドコンポーネントの利用方法
 - [Cloud Watch Trigger](./components/cloud-watch-trigger.md) - Lambda 関数の詳細
 
-### 開発ガイド
+### 📝 開発ガイド
 - [実装ルール](./development/implementation-rules.md) - コーディング規約と実装ルール
 - [共通部品利用ガイド](./development/common-components-guide.md) - 共通部品の使い方
 - [テストガイド](./development/testing-guide.md) - テストの書き方
 
-### セットアップ
+### 🔧 セットアップ
 - [基本設定](./settings/baseSetting.md) - GitHub と AWS の基本設定
 
 ## クイックスタート
