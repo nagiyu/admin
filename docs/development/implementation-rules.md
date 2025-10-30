@@ -75,7 +75,6 @@ function shouldDisplayError() { }
 #### クラス・インターフェース・型
 
 - **PascalCase** を使用
-- 型やインターフェースには `Type` や `Interface` サフィックスは不要
 
 ```typescript
 // クラス
@@ -93,29 +92,25 @@ type UserCallback = (user: User) => void;
 
 #### 定数
 
-- **UPPER_SNAKE_CASE** を使用 (グローバル定数)
-- **camelCase** を使用 (ローカル定数)
+- **UPPER_SNAKE_CASE** を使用
 
 ```typescript
-// グローバル定数
+// 定数
 export const MAX_RETRY_COUNT = 3;
 export const DEFAULT_TIMEOUT = 5000;
-
-// ローカル定数
-const maxItems = 100;
-const defaultValue = 'N/A';
+export const API_VERSION = 'v1';
 ```
 
 #### Enum
 
 - **PascalCase** を使用
-- メンバーは **UPPER_CASE** または **PascalCase**
+- メンバーは **PascalCase** を使用
 
 ```typescript
 enum UserRole {
-  ADMIN = 'ADMIN',
-  USER = 'USER',
-  GUEST = 'GUEST',
+  Admin = 'ADMIN',
+  User = 'USER',
+  Guest = 'GUEST',
 }
 
 enum PermissionLevel {
@@ -127,8 +122,8 @@ enum PermissionLevel {
 
 ### ファイル・ディレクトリ
 
-- **PascalCase** を使用 (TypeScript ファイル)
-- **kebab-case** を使用 (その他のファイル)
+- **PascalCase** を使用 (TypeScript/TSX ファイル)
+- **kebab-case** を使用 (設定ファイル、ドキュメントなど)
 
 ```
 services/
@@ -173,7 +168,7 @@ const age = 30        // ❌
 
 ### クォート
 
-- **シングルクォート** を優先
+- **シングルクォート** を厳守
 - テンプレートリテラルは必要な時のみ使用
 
 ```typescript
@@ -281,9 +276,10 @@ services/
 #### 3. インポートの順序
 
 1. 外部ライブラリ
-2. 共通モジュール (`@common`)
+2. 共通モジュール (`@common`, `@common-client`)
 3. プロジェクト内モジュール (`@admin`, `@/`)
-4. 相対パス
+
+**注意**: 相対パスは基本的に避け、エイリアスパスを使用してください。
 
 ```typescript
 // 外部ライブラリ
@@ -293,13 +289,12 @@ import { gunzip } from 'zlib';
 // 共通モジュール
 import { DataTypeBase } from '@common/interfaces/data/DataTypeBase';
 import CRUDServiceBase from '@common/services/CRUDServiceBase';
+import BasicTable from '@common-client/components/data/table/BasicTable';
 
 // プロジェクト内モジュール
 import { AdminDataType } from '@admin/interfaces/data/AdminDataType';
 import { AdminRecordType } from '@admin/interfaces/records/AdminRecordType';
-
-// 相対パス
-import { AdminDataAccessor } from './AdminDataAccessor';
+import { ErrorNotificationFetchService } from '@/services/ErrorNotificationFetchService.client';
 ```
 
 ## データ型の定義ルール
@@ -446,7 +441,10 @@ export default async function MyServerComponent() {
 
 ### 2. Props の型定義
 
+Props は継承できるよう、**必ず `interface` を使用**してください。
+
 ```typescript
+// Good ✅
 interface MyComponentProps {
   title: string;
   count?: number;           // オプション
@@ -455,6 +453,22 @@ interface MyComponentProps {
 
 export default function MyComponent({ title, count = 0, onSubmit }: MyComponentProps) {
   // ...
+}
+
+// Bad ❌ - type は継承できないため使用しない
+type MyComponentProps = {
+  title: string;
+  count?: number;
+  onSubmit: (data: FormData) => void;
+};
+```
+
+**理由**: `interface` は `extends` で拡張可能ですが、`type` は拡張できません。
+
+```typescript
+// 拡張例
+interface ExtendedProps extends MyComponentProps {
+  subtitle: string;
 }
 ```
 
@@ -583,27 +597,55 @@ describe('AdminService', () => {
 
 ### 3. モックの使用
 
+**依存性注入 (DI) を使用したモック**を可能な限り目指してください。
+
 ```typescript
+import { AdminService } from '@admin/services/admin/AdminService';
 import { AdminDataAccessor } from '@admin/services/admin/AdminDataAccessor';
 
-jest.mock('@admin/services/admin/AdminDataAccessor');
-
 describe('AdminService', () => {
+  let service: AdminService;
   let mockDataAccessor: jest.Mocked<AdminDataAccessor>;
 
   beforeEach(() => {
+    // モックインスタンスを作成
     mockDataAccessor = {
       getAll: jest.fn(),
       getById: jest.fn(),
       put: jest.fn(),
       delete: jest.fn(),
     } as any;
+
+    // DI でモックを注入
+    service = new AdminService(mockDataAccessor);
   });
 
-  it('should work with mock', async () => {
-    mockDataAccessor.getAll.mockResolvedValue([]);
-    // テスト実装
+  it('should get all admin data', async () => {
+    // モックの戻り値を設定
+    const mockRecords = [
+      { ID: 'admin-001', TerminalIDList: ['terminal-001'], Create: 0, Update: 0 }
+    ];
+    mockDataAccessor.getAll.mockResolvedValue(mockRecords);
+
+    // テスト実行
+    const result = await service.get();
+
+    // 検証
+    expect(result).toHaveLength(1);
+    expect(result[0].id).toBe('admin-001');
+    expect(mockDataAccessor.getAll).toHaveBeenCalledTimes(1);
   });
+});
+```
+
+**jest.mock() の使用は最小限に**:
+
+```typescript
+// DI が使えない場合のみ使用
+jest.mock('@admin/services/admin/AdminDataAccessor');
+
+describe('AdminService', () => {
+  // テスト実装
 });
 ```
 
