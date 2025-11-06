@@ -8,31 +8,19 @@
 
 ### 1. ユーザー認証フロー
 
-```
-┌────────┐
-│ User   │
-└────┬───┘
-     │ 1. アクセス
-     ▼
-┌─────────────────┐
-│ Next.js Client  │
-└────┬────────────┘
-     │ 2. NextAuth.js 認証
-     ▼
-┌─────────────────┐
-│ Auth Provider   │
-└────┬────────────┘
-     │ 3. トークン発行
-     ▼
-┌─────────────────┐
-│ Client Session  │
-└────┬────────────┘
-     │ 4. 機能アクセス
-     ▼
-┌─────────────────┐
-│ FeatureGuard    │
-│ 権限チェック     │
-└─────────────────┘
+```mermaid
+sequenceDiagram
+    actor User
+    participant Client as Next.js Client
+    participant Auth as Auth Provider
+    participant Session as Client Session
+    participant Guard as FeatureGuard
+
+    User->>Client: 1. アクセス
+    Client->>Auth: 2. NextAuth.js 認証
+    Auth->>Session: 3. トークン発行
+    Session->>Guard: 4. 機能アクセス
+    Guard->>Guard: 権限チェック
 ```
 
 **処理ステップ**:
@@ -44,60 +32,28 @@
 
 ### 2. データ取得フロー (Read)
 
-```
-┌────────────┐
-│   UI Page  │
-└─────┬──────┘
-      │ 1. データ要求
-      ▼
-┌──────────────────┐
-│ Fetch Service    │
-│ (Client)         │
-└─────┬────────────┘
-      │ 2. API リクエスト
-      ▼
-┌──────────────────┐
-│ API Route        │
-│ (Next.js)        │
-└─────┬────────────┘
-      │ 3. サービス呼び出し
-      ▼
-┌──────────────────┐
-│ Backend Service  │
-│ (Admin)          │
-└─────┬────────────┘
-      │ 4. データアクセス
-      ▼
-┌──────────────────┐
-│ Data Accessor    │
-└─────┬────────────┘
-      │ 5. DynamoDB クエリ
-      ▼
-┌──────────────────┐
-│   DynamoDB       │
-└─────┬────────────┘
-      │ 6. レコード返却
-      ▼
-┌──────────────────┐
-│ Data Accessor    │
-│ Record → Data    │
-└─────┬────────────┘
-      │ 7. データ型変換
-      ▼
-┌──────────────────┐
-│ Backend Service  │
-│ ソート・加工      │
-└─────┬────────────┘
-      │ 8. JSON レスポンス
-      ▼
-┌──────────────────┐
-│ Fetch Service    │
-└─────┬────────────┘
-      │ 9. State 更新
-      ▼
-┌──────────────────┐
-│   UI 表示        │
-└──────────────────┘
+```mermaid
+sequenceDiagram
+    participant UI as UI Page
+    participant Fetch as Fetch Service (Client)
+    participant API as API Route (Next.js)
+    participant Service as Backend Service (Admin)
+    participant Accessor as Data Accessor
+    participant DB as DynamoDB
+
+    UI->>Fetch: 1. データ要求
+    Fetch->>API: 2. API リクエスト
+    API->>Service: 3. サービス呼び出し
+    Service->>Accessor: 4. データアクセス
+    Accessor->>DB: 5. DynamoDB クエリ
+    DB->>Accessor: 6. レコード返却
+    Accessor->>Accessor: Record → Data
+    Accessor->>Service: 7. データ型変換
+    Service->>Service: ソート・加工
+    Service->>API: 8. JSON レスポンス
+    API->>Fetch: データ返却
+    Fetch->>UI: 9. State 更新
+    UI->>UI: UI 表示
 ```
 
 **処理ステップ**:
@@ -115,46 +71,29 @@
 
 ### 3. データ作成/更新フロー (Create/Update)
 
-```
-┌────────────┐
-│ User Input │
-└─────┬──────┘
-      │ 1. フォーム送信
-      ▼
-┌──────────────────┐
-│ UI Component     │
-└─────┬────────────┘
-      │ 2. データ検証
-      ▼
-┌──────────────────┐
-│ Fetch Service    │
-└─────┬────────────┘
-      │ 3. POST/PUT リクエスト
-      ▼
-┌──────────────────┐
-│ API Route        │
-└─────┬────────────┘
-      │ 4. サービス呼び出し
-      ▼
-┌──────────────────┐
-│ Backend Service  │
-│ Data → Record    │
-└─────┬────────────┘
-      │ 5. レコード変換
-      ▼
-┌──────────────────┐
-│ Data Accessor    │
-└─────┬────────────┘
-      │ 6. DynamoDB Put/Update
-      ▼
-┌──────────────────┐
-│   DynamoDB       │
-└─────┬────────────┘
-      │ 7. 成功レスポンス
-      ▼
-┌──────────────────┐
-│ UI 更新          │
-└──────────────────┘
+```mermaid
+sequenceDiagram
+    actor User
+    participant UI as UI Component
+    participant Fetch as Fetch Service
+    participant API as API Route
+    participant Service as Backend Service
+    participant Accessor as Data Accessor
+    participant DB as DynamoDB
+
+    User->>UI: 1. フォーム送信
+    UI->>UI: 2. データ検証
+    UI->>Fetch: データ送信
+    Fetch->>API: 3. POST/PUT リクエスト
+    API->>Service: 4. サービス呼び出し
+    Service->>Service: Data → Record
+    Service->>Accessor: 5. レコード変換
+    Accessor->>DB: 6. DynamoDB Put/Update
+    DB->>Accessor: 7. 成功レスポンス
+    Accessor->>Service: 応答
+    Service->>API: 応答
+    API->>Fetch: 応答
+    Fetch->>UI: UI 更新
 ```
 
 **処理ステップ**:
@@ -169,57 +108,28 @@
 
 ### 4. エラー通知フロー
 
-```
-┌──────────────────┐
-│ Application      │
-│ (Error occurs)   │
-└─────┬────────────┘
-      │ 1. エラー発生
-      ▼
-┌──────────────────┐
-│ Error Logger     │
-└─────┬────────────┘
-      │ 2. ログ出力
-      ▼
-┌──────────────────┐
-│ CloudWatch Logs  │
-└─────┬────────────┘
-      │ 3. ログストリーム
-      ▼
-┌──────────────────┐
-│ Lambda Trigger   │
-└─────┬────────────┘
-      │ 4. イベント処理
-      ▼
-┌───────────────────────────────────────┐
-│ ErrorLogEntryService                  │
-│ - ログ解析                             │
-│ - ErrorNotificationDataType 作成      │
-└─────┬─────────────────────────────────┘
-      │ 5. エラー情報保存
-      ▼
-┌──────────────────┐
-│ DynamoDB         │
-│ (ErrorNotif)     │
-└─────┬────────────┘
-      │ 6. 保存完了
-      ▼
-┌──────────────────┐
-│ Notification     │
-│ Service          │
-└─────┬────────────┘
-      │ 7. 通知送信
-      ▼
-┌──────────────────┐
-│ LogAnalyzer      │
-│ Service          │
-└─────┬────────────┘
-      │ 8. ログ分析
-      ▼
-┌──────────────────┐
-│ DynamoDB Update  │
-│ (分析結果追加)    │
-└──────────────────┘
+```mermaid
+sequenceDiagram
+    participant App as Application
+    participant Logger as Error Logger
+    participant CW as CloudWatch Logs
+    participant Lambda as Lambda Trigger
+    participant Entry as ErrorLogEntryService
+    participant DB as DynamoDB (ErrorNotif)
+    participant Notif as Notification Service
+    participant Analyzer as LogAnalyzer Service
+
+    App->>Logger: 1. エラー発生
+    Logger->>CW: 2. ログ出力
+    CW->>Lambda: 3. ログストリーム
+    Lambda->>Entry: 4. イベント処理
+    Entry->>Entry: ログ解析<br/>ErrorNotificationDataType 作成
+    Entry->>DB: 5. エラー情報保存
+    DB->>Entry: 6. 保存完了
+    Entry->>Notif: 7. 通知送信
+    Notif->>Analyzer: 処理完了
+    Analyzer->>Analyzer: 8. ログ分析
+    Analyzer->>DB: DynamoDB Update (分析結果追加)
 ```
 
 **処理ステップ**:
@@ -235,29 +145,17 @@
 
 ### 5. 機能情報管理フロー
 
-```
-┌──────────────────┐
-│ Admin UI         │
-└─────┬────────────┘
-      │ 1. 機能情報要求
-      ▼
-┌──────────────────┐
-│ FeatureInfo      │
-│ Service          │
-└─────┬────────────┘
-      │ 2. DynamoDB 取得
-      ▼
-┌──────────────────┐
-│ DynamoDB         │
-│ (FeatureInfo)    │
-└─────┬────────────┘
-      │ 3. FeatureInfoList
-      ▼
-┌──────────────────┐
-│ Client           │
-│ - rootFeature    │
-│ - url            │
-└──────────────────┘
+```mermaid
+sequenceDiagram
+    participant UI as Admin UI
+    participant Service as FeatureInfo Service
+    participant DB as DynamoDB (FeatureInfo)
+    participant Client
+
+    UI->>Service: 1. 機能情報要求
+    Service->>DB: 2. DynamoDB 取得
+    DB->>Service: FeatureInfoList
+    Service->>Client: 3. FeatureInfoList<br/>rootFeature / url
 ```
 
 **FeatureInfo データ構造**:
